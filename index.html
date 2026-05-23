@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinar Indah Kasir</title>
+    <meta name="theme-color" content="#0056b3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 0; padding-bottom: 90px; }
+        
+        .app-bar { background-color: #0056b3; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100; }
+        .app-bar span { display: block; font-size: 12px; font-weight: normal; opacity: 0.9; margin-top: 2px; }
+        
+        .content { padding: 15px; max-width: 500px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card-title { font-size: 14px; font-weight: bold; color: #555; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background-color: #fafafa; }
+        .form-control:focus { border-color: #0056b3; outline: none; background-color: #fff; }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+        .col-35 { width: 35%; flex: none; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; display: block; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-primary { background-color: #0056b3; color: white; }
+        .btn-warning { background-color: #ffc107; color: #212529; margin-bottom: 10px; }
+        .btn-danger { background-color: #dc3545; color: white; padding: 5px 10px; font-size: 12px; width: auto; }
+        
+        .item-list { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .item-list th { text-align: left; font-size: 12px; color: #777; padding-bottom: 8px; border-bottom: 2px solid #eee; }
+        .item-list td { padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        
+        .print-total-row { border-top: 2px solid #333; font-size: 16px; font-weight: bold; text-align: right; }
+        .print-total-row td { padding: 15px 0 5px 0; }
+        
+        .nota-footer { text-align: center; margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px; }
+        .nota-footer .thanks { font-weight: bold; font-size: 14px; color: #333; margin-bottom: 5px; }
+        .nota-footer .warning { font-weight: bold; font-size: 11px; color: #c82333; letter-spacing: 0.5px; }
+
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: auto; border-radius: 12px 12px 0 0; }
+        .total-container { display: flex; flex-direction: column; }
+        .total-label { font-size: 12px; color: #666; }
+        .total-amount { font-size: 20px; font-weight: bold; color: #dc3545; }
+        .btn-checkout { width: 45%; }
+        
+        #statusPrinter { text-align: center; font-size: 12px; font-weight: bold; color: #dc3545; margin-bottom: 8px; }
+
+        @media print {
+            body { background: white; padding-bottom: 0; }
+            .app-bar, .no-print, .bottom-bar, .card-input, .btn-danger, #statusPrinter { display: none !important; }
+            .content { padding: 0; max-width: 100%; }
+            .card { box-shadow: none; padding: 0; margin: 0; }
+            .card-title { display: none; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; }
+            .print-header h2 { margin: 0; font-size: 22px; color: #000; text-transform: uppercase; }
+            .print-header p { margin: 4px 0; font-size: 13px; color: #333; }
+            .nota-footer { border-top: 1px dashed #000; }
+            .nota-footer .warning { color: #000; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        TOKO LISTRIK SINAR INDAH
+        <span>Jalan Raya Keruak - Pancor</span>
+        <span>Lombok Timur</span>
+    </div>
+
+    <div class="content">
+        <div class="print-header">
+            <h2>TOKO LISTRIK SINAR INDAH</h2>
+            <p>Jalan Raya Keruak - Pancor</p>
+            <p>Lombok Timur</p>
+        </div>
+
+        <!-- Bagian Koneksi Printer Bluetooth -->
+        <div class="card no-print">
+            <div class="card-title">KONEKSI PRINTER KASIR</div>
+            <div id="statusPrinter">Status: Belum Terhubung ❌</div>
+            <button class="btn btn-warning" onclick="sambungPrinterBluetooth()">🔗 Hubungkan Printer Bluetooth</button>
+        </div>
+
+        <!-- Card 1: Informasi Pelanggan -->
+        <div class="card">
+            <div class="card-title">DATA TRANSAKSI</div>
+            <div class="row">
+                <div class="col form-group">
+                    <label>No. Nota</label>
+                    <input type="text" id="noNota" class="form-control" placeholder="SI-00001">
+                </div>
+                <div class="col form-group">
+                    <label>Tanggal</label>
+                    <input type="date" id="tglNota" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nama Pelanggan</label>
+                <input type="text" id="namaPelanggan" class="form-control" value="Umum / Tunai">
+            </div>
+        </div>
+
+        <!-- Card 2: Input Barang -->
+        <div class="card card-input no-print">
+            <div class="card-title">+ TAMBAH BARANG</div>
+            <div class="form-group">
+                <label>Nama Barang / Alat Listrik</label>
+                <input type="text" id="inputNama" class="form-control" placeholder="Contoh: Lampu Sorot LED Kawachi">
+            </div>
+            <div class="row">
+                <div class="col form-group">
+                    <label>Jumlah</label>
+                    <input type="text" id="inputQty" class="form-control" value="1" inputmode="numeric" onfocus="if(this.value=='1')this.value='';" onblur="if(this.value=='')this.value='1';">
+                </div>
+                <div class="col-35 form-group">
+                    <label>Satuan</label>
+                    <select id="inputSatuan" class="form-control">
+                        <option value="Pcs">Pcs</option>
+                        <option value="Meter">Meter</option>
+                        <option value="Roll">Roll</option>
+                        <option value="Bungkus">Bungkus</option>
+                        <option value="Kotak">Kotak</option>
+                        <option value="Dus">Dus</option>
+                        <option value="Set">Set</option>
+                    </select>
+                </div>
+                <div class="col form-group">
+                    <label>Harga Satuan (Rp)</label>
+                    <input type="text" id="inputHarga" class="form-control" placeholder="0" inputmode="numeric" oninput="formatRupiahInput(this)" onfocus="this.select();">
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="tambahKeKeranjang()">Masuk Keranjang</button>
+        </div>
+
+        <!-- Card 3: Daftar Belanja -->
+        <div class="card">
+            <div class="card-title">DAFTAR BARANG BELANJA</div>
+            <table class="item-list">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Barang</th>
+                        <th style="width: 15%; text-align: center;">Qty</th>
+                        <th style="width: 35%; text-align: right;">Total</th>
+                        <th class="no-print" style="width: 10%;"></th>
+                    </tr>
+                </thead>
+                <tbody id="keranjangBelanja"></tbody>
+                <tfoot>
+                    <tr class="print-total-row">
+                        <td colspan="2">TOTAL BELANJA :</td>
+                        <td id="notaGrandTotal">Rp 0</td>
+                        <td class="no-print"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="nota-footer">
+                <div class="thanks">TERIMA KASIH</div>
+                <div class="warning">BARANG YANG SUDAH DIBELI TIDAK DAPAT DIKEMBALIKAN</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="total-container">
+            <span class="total-label">TOTAL BAYAR</span>
+            <span class="total-amount" id="totalBayar">Rp 0</span>
+        </div>
+        <button class="btn btn-primary btn-checkout" onclick="prosesCetak()">Cetak Nota</button>
+    </div>
+
+    <script>
+        document.getElementById('tglNota').valueAsDate = new Date();
+        
+        let keranjang = [];
+        let grandTotal = 0;
+        let bluetoothDevice = null;
+        let printCharacteristic = null;
+
+        function formatRupiahInput(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            if (value === "") { input.value = ""; return; }
+            input.value = parseInt(value).toLocaleString('id-ID');
+        }
+
+        function bersihAngka(str) {
+            return parseFloat(str.replace(/\./g, '')) || 0;
+        }
+
+        // ================= KODE BLUETOOTH PRINTER TERBARU =================
+        async function sambungPrinterBluetooth() {
+            try {
+                // Diperbaiki: Membuka semua perangkat tanpa penyaringan ketat UUID di awal
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
+                });
+
+                document.getElementById('statusPrinter').innerHTML = "Menghubungkan... ⏳";
+                document.getElementById('statusPrinter').style.color = "#ffc107";
+                
+                const server = await bluetoothDevice.gatt.connect();
+                
+                // Diperbarui: Mencari primary service secara dinamis dan otomatis
+                const services = await server.getPrimaryServices();
+                if (services.length === 0) {
+                    throw new Error("Service printer tidak ditemukan.");
+                }
+                
+                // Mengambil service pertama dan karakteristik pertamanya untuk jalur data cetak
+                const service = services[0];
+                const characteristics = await service.getCharacteristics();
+                printCharacteristic = characteristics[0];
+
+                document.getElementById('statusPrinter').innerHTML = "Terhubung ke: " + (bluetoothDevice.name || "Printer") + " Ready! ✅";
+                document.getElementById('statusPrinter').style.color = "#28a745";
+            } catch (error) {
+                console.log(error);
+                document.getElementById('statusPrinter').innerHTML = "Gagal: Perangkat tidak mendukung / dibatalkan ❌";
+                document.getElementById('statusPrinter').style.color = "#dc3545";
+            }
+        }
+
+        async function kirimTeksKePrinter(teks) {
+            if (!printCharacteristic) return false;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(teks + "\n\n\n\n"); 
+            await printCharacteristic.writeValue(data);
+            return true;
+        }
+
+        function buatFormatStrukTeks() {
+            const noNota = document.getElementById('noNota').value || "SI-" + Math.floor(Math.random() * 1000);
+            const tgl = document.getElementById('tglNota').value;
+            const pelanggan = document.getElementById('namaPelanggan').value;
+
+            let struk = "";
+            struk += "   TOKO LISTRIK SINAR INDAH   \n";
+            struk += "  Jalan Raya Keruak - Pancor  \n";
+            struk += "        Lombok Timur          \n";
+            struk += "------------------------------\n";
+            struk += `Nota : ${noNota}\n`;
+            struk += `Tgl  : ${tgl}\n`;
+            struk += `Plg  : ${pelanggan}\n`;
+            struk += "------------------------------\n";
+
+            keranjang.forEach(item => {
+                struk += `${item.nama}\n`;
+                let detailRow = `  ${item.qty} ${item.satuan} x Rp${item.harga.toLocaleString('id-ID')}`;
+                let totalRow = `Rp${item.total.toLocaleString('id-ID')}`;
+                let sisaSpasi = 30 - detailRow.length - totalRow.length;
+                if (sisaSpasi < 1) sisaSpasi = 1;
+                struk += detailRow + " ".repeat(sisaSpasi) + totalRow + "\n";
+            });
+
+            struk += "------------------------------\n";
+            let totalLabel = "TOTAL BELANJA:";
+            let totalVal = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+            struk += totalLabel + " ".repeat(30 - totalLabel.length - totalVal.length) + totalVal + "\n";
+            struk += "------------------------------\n";
+            struk += "        TERIMA KASIH          \n";
+            struk += "   BARANG YANG SUDAH DIBELI   \n";
+            struk += "   TIDAK DAPAT DIKEMBALIKAN   \n";
+            
+            return struk;
+        }
+        // ==========================================================
+
+        function tambahKeKeranjang() {
+            const nama = document.getElementById('inputNama').value;
+            const qty = parseInt(document.getElementById('inputQty').value) || 0;
+            const satuan = document.getElementById('inputSatuan').value;
+            const harga = bersihAngka(document.getElementById('inputHarga').value);
+
+            if (nama.trim() === "" || qty <= 0 || harga <= 0) {
+                alert("Harap isi data barang dengan benar!");
+                return;
+            }
+
+            const total = qty * harga;
+            keranjang.push({ nama, qty, satuan, harga, total });
+
+            document.getElementById('inputNama').value = "";
+            document.getElementById('inputQty').value = "1";
+            document.getElementById('inputSatuan').value = "Pcs";
+            document.getElementById('inputHarga').value = "";
+
+            perbaruiTampilanKeranjang();
+        }
+
+        function perbaruiTampilanKeranjang() {
+            const tbody = document.getElementById('keranjangBelanja');
+            tbody.innerHTML = "";
+            grandTotal = 0;
+
+            keranjang.forEach((item, index) => {
+                grandTotal += item.total;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><b>${item.nama}</b><br><small style="color:#777;">@ Rp ${item.harga.toLocaleString('id-ID')}</small></td>
+                    <td style="text-align: center;">${item.qty} ${item.satuan}</td>
+                    <td style="text-align: right; font-weight: bold;">Rp ${item.total.toLocaleString('id-ID')}</td>
+                    <td class="no-print" style="text-align: right;"><button class="btn btn-danger" onclick="hapusItem(${index})">X</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const formatTotal = "Rp " + grandTotal.toLocaleString('id-ID');
+            document.getElementById('totalBayar').innerText = formatTotal;
+            document.getElementById('notaGrandTotal').innerText = formatTotal;
+        }
+
+        function hapusItem(index) {
+            keranjang.splice(index, 1);
+            perbaruiTampilanKeranjang();
+        }
+
+        async function prosesCetak() {
+            if (keranjang.length === 0) {
+                alert("Keranjang masih kosong!");
+                return;
+            }
+            
+            if (printCharacteristic) {
+                const teksStruk = buatFormatStrukTeks();
+                await kirimTeksKePrinter(teksStruk);
+            } else {
+                // Jika bluetooth belum terhubung, lempar otomatis ke cetak thermal bawaan sistem HP (Sistem Kertas)
+                window.print();
+            }
+        }
+    </script>
+</body>
+</html>
